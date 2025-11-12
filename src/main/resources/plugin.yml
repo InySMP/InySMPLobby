@@ -12,5 +12,5 @@ commands:
     aliases: [l, hub]
   teleportmenu:
     description: Opens the server selection GUI.
-    usage: /teleportmenu
+    usage: /menu
     permission: inysmplobby.menu

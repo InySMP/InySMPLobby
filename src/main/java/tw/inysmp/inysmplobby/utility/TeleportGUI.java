@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 public class TeleportGUI {
 
-    /** 創建一個 ItemStack 項目 */
+    /** 創建一個 ItemStack 項目，會處理顏色代碼 */
     public static ItemStack createMenuItem(Material material, String name, List<String> lore) {
         ItemStack item = new ItemStack(material);
         ItemMeta meta = item.getItemMeta();
@@ -29,19 +29,19 @@ public class TeleportGUI {
         return item;
     }
 
-    /** 打開 GUI */
+    /** 打開普通玩家 GUI */
     public static void openGUI(Player player) {
         InySMPLobby plugin = InySMPLobby.getInstance();
+        ConfigurationSection configOptions = plugin.getConfig().getConfigurationSection("teleport-options");
+        
         String title = plugin.getConfig().getString("gui-title", "§8伺服器選擇菜單");
         
         // 建立 3 行的 GUI
         Inventory gui = Bukkit.createInventory(player, 27, title);
         
-        ConfigurationSection options = plugin.getConfig().getConfigurationSection("teleport-options");
-        
-        if (options != null) {
-            for (String key : options.getKeys(false)) {
-                ConfigurationSection itemSection = options.getConfigurationSection(key);
+        if (configOptions != null) {
+            for (String key : configOptions.getKeys(false)) {
+                ConfigurationSection itemSection = configOptions.getConfigurationSection(key);
                 
                 Material material = Material.getMaterial(itemSection.getString("item", "STONE"));
                 String name = itemSection.getString("name", "未定義項目");
@@ -56,6 +56,6 @@ public class TeleportGUI {
         }
         
         player.openInventory(gui);
-        // player.sendMessage(plugin.getMessage("gui-opened"));
+        player.sendMessage(plugin.getMessage("gui-opened"));
     }
 }

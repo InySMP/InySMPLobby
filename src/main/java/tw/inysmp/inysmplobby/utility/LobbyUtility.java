@@ -12,11 +12,9 @@ public class LobbyUtility {
     public static void teleportToLobby(Player player) {
         InySMPLobby plugin = InySMPLobby.getInstance();
         ConfigurationSection lobbyCfg = plugin.getConfig().getConfigurationSection("lobby-location");
-        String messageKey = "lobby-location-not-set"; // 假設從 messages.yml 讀取
-
+        
         if (lobbyCfg == null || !lobbyCfg.contains("world")) {
-            // player.sendMessage(plugin.getMessage(messageKey));
-            player.sendMessage("§c大廳位置尚未設定，請聯繫管理員！");
+            player.sendMessage(plugin.getMessage("lobby-location-not-set"));
             return;
         }
 
@@ -24,8 +22,8 @@ public class LobbyUtility {
         World world = Bukkit.getWorld(worldName);
         
         if (world == null) {
-            // player.sendMessage(plugin.getMessage(messageKey));
-            player.sendMessage("§c大廳世界不存在，請聯繫管理員！");
+            plugin.getLogger().severe("Lobby world '" + worldName + "' not found!");
+            player.sendMessage(plugin.getMessage("lobby-location-not-set"));
             return;
         }
 
@@ -38,7 +36,6 @@ public class LobbyUtility {
         Location lobbyLoc = new Location(world, x, y, z, yaw, pitch);
         
         player.teleport(lobbyLoc);
-        // player.sendMessage(plugin.getMessage("teleport-to-lobby"));
-        player.sendMessage("§a已將您傳送到大廳！");
+        player.sendMessage(plugin.getMessage("teleport-to-lobby"));
     }
 }

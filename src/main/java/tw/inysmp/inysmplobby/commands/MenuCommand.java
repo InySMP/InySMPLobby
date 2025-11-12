@@ -4,6 +4,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import tw.inysmp.inysmplobby.InySMPLobby;
 import tw.inysmp.inysmplobby.utility.TeleportGUI;
 
 public class MenuCommand implements CommandExecutor {
@@ -17,7 +18,7 @@ public class MenuCommand implements CommandExecutor {
         Player player = (Player) sender;
         
         if (!player.hasPermission("inysmplobby.menu")) {
-            player.sendMessage("§c您沒有權限執行此操作。");
+            player.sendMessage(InySMPLobby.getInstance().getMessage("no-permission"));
             return true;
         }
         
