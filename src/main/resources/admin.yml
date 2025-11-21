@@ -2,11 +2,11 @@
 admin-menu:
   enabled: true
   
-  # 觸發物設定 (紅石放在快捷欄第 7 格)
+  # 觸發物設定
   trigger-item:
     material: REDSTONE
     name: "§c§l管理員工具菜單"
-    slot: 6 # 快捷欄第 7 格的索引是 6 (從 0 開始)
+    slot: 6
     
   # 權限檢查
   permission: inysmplobby.admin
@@ -20,7 +20,12 @@ admin-menu:
       lore:
         - "§7點擊將您當前位置"
         - "§7儲存為大廳傳送點。"
-      # 點擊後執行的指令 (將在 GuiListener 中處理)
+
+# set lobby
+  # {x} set "x"
+  # {y} set "y"
+  # {z} set "z"
+
       command: "inysmplobby setlobby {x} {y} {z} {yaw} {pitch} {world}"
       slot: 11
     

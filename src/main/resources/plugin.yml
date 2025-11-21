@@ -2,7 +2,7 @@ name: InySMPLobby
 version: ${version}
 main: tw.inysmp.inysmplobby.InySMPLobby
 api-version: 1.21
-authors: [InySMP | InySMP]
+authors: [InyTw]
 description: A custom lobby and teleportation management plugin for InySMP.
 
 commands:
