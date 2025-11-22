@@ -2,11 +2,15 @@ package tw.inysmp.inysmplobby.utility;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.ChatColor;
+import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
 import tw.inysmp.inysmplobby.InySMPLobby;
 
 import java.util.List;
@@ -19,7 +23,7 @@ public class TeleportGUI {
         ItemStack item = new ItemStack(material);
         ItemMeta meta = item.getItemMeta();
         
-        // 設置顯示名稱和描述，並替換顏色代碼
+        // 替換顏色代碼
         meta.setDisplayName(name.replace('&', '§'));
         if (lore != null) {
             meta.setLore(lore.stream().map(s -> s.replace('&', '§')).collect(Collectors.toList()));
@@ -33,12 +37,14 @@ public class TeleportGUI {
     public static void openGUI(Player player) {
         InySMPLobby plugin = InySMPLobby.getInstance();
         ConfigurationSection configOptions = plugin.getConfig().getConfigurationSection("teleport-options");
+        FileConfiguration waypointsCfg = plugin.getWaypointsConfig(); 
         
         String title = plugin.getConfig().getString("gui-title", "§8伺服器選擇菜單");
         
-        // 建立 3 行的 GUI
         Inventory gui = Bukkit.createInventory(player, 27, title);
+        int slotIndex = 14; 
         
+        // 1. 載入 config.yml 中的固定傳送點
         if (configOptions != null) {
             for (String key : configOptions.getKeys(false)) {
                 ConfigurationSection itemSection = configOptions.getConfigurationSection(key);
@@ -55,6 +61,43 @@ public class TeleportGUI {
             }
         }
         
+        // 2. 載入 waypoints.yml 中的動態傳送點
+        ConfigurationSection points = waypointsCfg.getConfigurationSection("points");
+        if (points != null) {
+            for (String key : points.getKeys(false)) {
+                
+                Material material = Material.ENDER_PEARL; 
+                String name = ChatColor.translateAlternateColorCodes('&', "&d&l傳送點: &b" + key);
+                
+                double x = points.getDouble(key + ".x", 0);
+                double y = points.getDouble(key + ".y", 0);
+                double z = points.getDouble(key + ".z", 0);
+                
+                List<String> lore = List.of(
+                    ChatColor.translateAlternateColorCodes('&', "&7點擊傳送到 " + key),
+                    String.format(ChatColor.translateAlternateColorCodes('&', "&7座標: %.1f, %.1f, %.1f"), x, y, z)
+                );
+                
+                ItemStack item = createMenuItem(material, name, lore);
+                
+                // 設置自定義標籤來標識它是一個 Waypoint
+                ItemMeta meta = item.getItemMeta();
+                NamespacedKey wayKey = new NamespacedKey(plugin, "waypoint");
+                
+                meta.getPersistentDataContainer().set(
+                    wayKey, 
+                    PersistentDataType.STRING, 
+                    key
+                );
+                item.setItemMeta(meta);
+                
+                if (slotIndex < 27) { 
+                    gui.setItem(slotIndex, item);
+                    slotIndex++;
+                }
+            }
+        }
+
         player.openInventory(gui);
         player.sendMessage(plugin.getMessage("gui-opened"));
     }

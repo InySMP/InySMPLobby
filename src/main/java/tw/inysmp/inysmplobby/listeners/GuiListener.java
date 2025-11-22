@@ -1,6 +1,9 @@
 package tw.inysmp.inysmplobby.listeners;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Location;
+import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -9,7 +12,10 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
 import tw.inysmp.inysmplobby.InySMPLobby;
+import tw.inysmp.inysmplobby.utility.WaypointUtility;
 
 public class GuiListener implements Listener {
 
@@ -22,13 +28,15 @@ public class GuiListener implements Listener {
         
         Player player = (Player) event.getWhoClicked();
         ItemStack clickedItem = event.getCurrentItem();
-        String clickedName = clickedItem.getItemMeta().getDisplayName();
+        ItemMeta clickedMeta = clickedItem.getItemMeta(); 
+        String clickedName = clickedMeta.getDisplayName();
         
-        // 1. 處理普通玩家菜單 (從 config.yml 讀取)
+        // 1. 處理普通玩家菜單
         String playerTitle = plugin.getConfig().getString("gui-title", "§8伺服器選擇菜單");
         if (event.getView().getTitle().equals(playerTitle)) {
             event.setCancelled(true);
             
+            // A. 處理 config.yml 中的固定指令傳送點
             ConfigurationSection options = plugin.getConfig().getConfigurationSection("teleport-options");
             
             if (options != null) {
@@ -45,9 +53,29 @@ public class GuiListener implements Listener {
                     }
                 }
             }
+            
+            // B. 處理 waypoints.yml 中的動態座標傳送點
+            NamespacedKey wayKey = new NamespacedKey(plugin, "waypoint");
+            if (clickedMeta.getPersistentDataContainer().has(wayKey, PersistentDataType.STRING)) {
+                
+                String waypointName = clickedMeta.getPersistentDataContainer().get(wayKey, PersistentDataType.STRING);
+                FileConfiguration waypointsCfg = plugin.getWaypointsConfig();
+                String path = "points." + waypointName;
+                
+                Location loc = WaypointUtility.loadWaypointLocation(waypointsCfg, path);
+                
+                if (loc != null) {
+                    player.closeInventory();
+                    player.teleport(loc);
+                    player.sendMessage(plugin.getPluginPrefix() + ChatColor.AQUA + "已傳送到傳送點: " + waypointName);
+                } else {
+                    player.sendMessage(plugin.getPluginPrefix() + ChatColor.RED + "傳送失敗，請聯繫管理員檢查座標。");
+                }
+                return;
+            }
         }
 
-        // 2. 處理管理員菜單 (從 admin.yml 讀取)
+        // 2. 處理管理員菜單 (不變)
         FileConfiguration adminCfg = plugin.getAdminConfig(); 
         String adminTitle = adminCfg.getString("admin-menu.gui-title", "§4§l管理員選單");
         if (event.getView().getTitle().equals(adminTitle)) {

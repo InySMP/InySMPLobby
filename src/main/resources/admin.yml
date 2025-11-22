@@ -2,11 +2,11 @@
 admin-menu:
   enabled: true
   
-  # 觸發物設定
+  # 觸發物設定 (紅石放在快捷欄第 7 格)
   trigger-item:
     material: REDSTONE
     name: "§c§l管理員工具菜單"
-    slot: 6
+    slot: 6 # 快捷欄第 7 格的索引是 6 (從 0 開始)
     
   # 權限檢查
   permission: inysmplobby.admin
@@ -20,12 +20,39 @@ admin-menu:
       lore:
         - "§7點擊將您當前位置"
         - "§7儲存為大廳傳送點。"
+      # 點擊後執行的指令 (將在 GuiListener 中處理)
+      command: "inysmplobby setlobby {x} {y} {z} {yaw} {pitch} {world}"
+      slot: 11
+    
+    reloadplugin:
+      item: PAPER
+      name: "§e重新載入插件"
+      lore:
+        - "§7重新載入所有配置文件。"
+      command: "inysmplobby reload"
+      slot: 13# 管理員菜單設定
+admin-menu:
+  enabled: true
+  
+  # 觸發物設定 (紅石放在快捷欄第 7 格)
+  trigger-item:
+    material: REDSTONE
+    name: "§c§l管理員工具菜單"
+    slot: 6 # 快捷欄第 7 格的索引是 6 (從 0 開始)
+    
+  # 權限檢查
+  permission: inysmplobby.admin
 
-# set lobby
-  # {x} set "x"
-  # {y} set "y"
-  # {z} set "z"
-
+  # GUI 內容設定
+  gui-title: "§4§l管理員選單"
+  options:
+    setlobby:
+      item: DIAMOND_BLOCK
+      name: "§b設定大廳位置"
+      lore:
+        - "§7點擊將您當前位置"
+        - "§7儲存為大廳傳送點。"
+      # 點擊後執行的指令 (將在 GuiListener 中處理)
       command: "inysmplobby setlobby {x} {y} {z} {yaw} {pitch} {world}"
       slot: 11
     

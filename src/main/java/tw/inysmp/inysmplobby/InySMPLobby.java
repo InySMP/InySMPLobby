@@ -8,8 +8,10 @@ import org.bukkit.Bukkit;
 
 import tw.inysmp.inysmplobby.commands.LobbyCommand;
 import tw.inysmp.inysmplobby.commands.MenuCommand;
+import tw.inysmp.inysmplobby.commands.InySMPLobbyCommand;
 import tw.inysmp.inysmplobby.listeners.GuiListener;
 import tw.inysmp.inysmplobby.listeners.PlayerEventListener;
+import tw.inysmp.inysmplobby.utility.UpdateChecker;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,22 +27,34 @@ public final class InySMPLobby extends JavaPlugin {
     
     private File adminFile;
     private FileConfiguration adminConfig; 
+    
+    // 新增：Waypoints 相關欄位
+    private File waypointsFile; 
+    private FileConfiguration waypointsConfig; 
+
+    private UpdateChecker updateChecker;
 
     @Override
     public void onEnable() {
         instance = this;
         
+        // 請替換成您的 GitHub 資訊
+        this.updateChecker = new UpdateChecker(this, "InySMP", "InySMPLobby");
         sendConsole("&6[&bIny&aSMP&eLobby&6] &2&lThe Plugin is loading now ... ");
 
         this.saveDefaultConfig();
         loadMessageFile("messages.yml"); 
         loadAdminFile("admin.yml");
+        loadWaypointsFile("waypoints.yml"); // <-- 載入 Waypoints
 
         this.getCommand("lobby").setExecutor(new LobbyCommand());
-        this.getCommand("teleportmenu").setExecutor(new MenuCommand());
+        this.getCommand("menu").setExecutor(new MenuCommand());
+        this.getCommand("smplobby").setExecutor(new InySMPLobbyCommand());
 
         getServer().getPluginManager().registerEvents(new PlayerEventListener(), this);
         getServer().getPluginManager().registerEvents(new GuiListener(), this);
+
+        updateChecker.notifyUpdate(null);
 
         sendConsole("&6[&bIny&aSMP&eLobby&6] &ev" + getDescription().getVersion() + " &a已啟動！");
     }
@@ -82,6 +96,25 @@ public final class InySMPLobby extends JavaPlugin {
         }
         adminConfig = YamlConfiguration.loadConfiguration(adminFile);
     }
+    
+    public void loadWaypointsFile(String fileName) {
+        if (waypointsFile == null) {
+            waypointsFile = new File(getDataFolder(), fileName);
+        }
+        if (!waypointsFile.exists()) {
+            this.saveResource(fileName, false);
+        }
+        waypointsConfig = YamlConfiguration.loadConfiguration(waypointsFile);
+    }
+    
+    public void saveWaypointsFile() {
+        if (waypointsFile == null || waypointsConfig == null) return;
+        try {
+            waypointsConfig.save(waypointsFile);
+        } catch (IOException e) {
+            getLogger().severe("無法儲存 waypoints.yml: " + e.getMessage());
+        }
+    }
 
     // ----------------------------------------------------
     // 獲取配置方法
@@ -89,6 +122,10 @@ public final class InySMPLobby extends JavaPlugin {
     
     public FileConfiguration getAdminConfig() {
         return adminConfig;
+    }
+    
+    public FileConfiguration getWaypointsConfig() {
+        return waypointsConfig;
     }
 
     public String getMessage(String path) {
@@ -124,5 +161,17 @@ public final class InySMPLobby extends JavaPlugin {
 
     public String getPluginPrefix() {
         return pluginPrefix;
+    }
+
+    public UpdateChecker getUpdateChecker() {
+        return updateChecker;
+    }
+    
+    // 輔助 reload
+    public void handleReload() {
+        this.reloadConfig();
+        this.loadMessageFile("messages.yml"); 
+        this.loadAdminFile("admin.yml");
+        this.loadWaypointsFile("waypoints.yml");
     }
 }
